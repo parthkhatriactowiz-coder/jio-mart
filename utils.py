@@ -35,7 +35,6 @@ class JioMartUtils:
                 if not isinstance(specification, dict):
                     continue
 
-                # Check for sub_specs structure
                 if "sub_specs" in specification and isinstance(
                     specification.get("sub_specs"), list
                 ):
@@ -53,7 +52,6 @@ class JioMartUtils:
                                     value = ", ".join(str(v) for v in value)
                                 extracted_specs[name] = value
                 else:
-                    # Flat structure
                     name = (
                         specification.get("display_string")
                         or specification.get("name")
@@ -71,13 +69,10 @@ class JioMartUtils:
         if not key_features:
             return ""
 
-        # If it's a string, return it as is
         if isinstance(key_features, str):
             return key_features
 
-        # If it's a list of strings (like your data)
         if isinstance(key_features, list):
-            # Filter out empty strings and join with " | "
             features = [
                 str(feature).strip()
                 for feature in key_features
@@ -85,7 +80,6 @@ class JioMartUtils:
             ]
             return " | ".join(features) if features else ""
 
-        # If it's any other type, convert to string
         return str(key_features)
 
     def extract_delivery_minutes(self, delivery_promise):
@@ -118,11 +112,6 @@ class JioMartUtils:
         shelf_life_data = variants.get("shelf_life", {})
         shelf_life_window = shelf_life_data.get("window", "")
         shelf_life_unit = shelf_life_data.get("window_unit", "")
-
-        if shelf_life_window:
-            shelf_life = str(shelf_life_window) + str(shelf_life_unit)
-        else:
-            shelf_life = ""
 
         sold_by = item.get("seller", {}).get("name", "")
         dimensions = variants.get("dimensions", {})
@@ -161,12 +150,11 @@ class JioMartUtils:
             "key_features": key_features_data,
             "brand_name": brand.get("name", ""),
             "sold_by": sold_by,
-            "brand_status": brand.get("status", ""),
             "origin_countries": origin_countries,
             "manufacturer_name": manufacturer.get("name", ""),
             "manufacturer_address": manufacturer_address,
             "product_code": attributes.get("product_code", ""),
-            "shelf_life": shelf_life,
+            "shelf_life": str(shelf_life_window) + " " + str(shelf_life_unit),
             "item_dimensions": item_dimension_data,
             "item_specifications": specification_data,
             "product_showcase": attributes.get("snippet", ""),

@@ -1,0 +1,93 @@
+{
+    "data": [
+        {
+            "sub_type": "pincode",
+            "name": "110043",
+            "error": {
+                "type": null,
+                "value": null,
+                "message": null
+            },
+            "uid": "6851881c34bc6fd8a2875475",
+            "display_name": "110043",
+            "meta": {
+                "685945f46c8c7aee3f3af605": {
+                    "zone": "north",
+                    "mbv_config": [
+                        {
+                            "department": "Groceries",
+                            "min_basket_value": 99
+                        }
+                    ]
+                }
+            },
+            "parents": [
+                {
+                    "uid": "64aff96f9ed6a9d76597c317",
+                    "name": "INDIA",
+                    "display_name": "India",
+                    "sub_type": "country"
+                },
+                {
+                    "uid": "6851881c34bc6fd8a287455e",
+                    "name": "DELHI",
+                    "display_name": "DELHI",
+                    "sub_type": "state"
+                },
+                {
+                    "uid": "6851881c34bc6fd8a287456d",
+                    "name": "DELHI",
+                    "display_name": "DELHI",
+                    "sub_type": "city"
+                }
+            ],
+            "lat_long": {
+                "type": "Point",
+                "coordinates": [
+                    77.5504,
+                    28.2549
+                ]
+            },
+            "meta_code": {
+                "iso2": "IN",
+                "iso3": "IND",
+                "currency": {
+                    "code": "INR",
+                    "name": "Indian Rupee",
+                    "symbol": "\u20b9"
+                },
+                "latitude": "28.6667",
+                "longitude": "77.2167",
+                "phone_code": "+91",
+                "zone": "red",
+                "deliverables": [
+                    "essential"
+                ],
+                "parent_id": null,
+                "hierarchy": [
+                    {
+                        "display_name": "Pincode",
+                        "slug": "pincode"
+                    },
+                    {
+                        "display_name": "City",
+                        "slug": "city"
+                    },
+                    {
+                        "display_name": "State",
+                        "slug": "state"
+                    }
+                ],
+                "country_code": "IN"
+            }
+        }
+    ],
+    "error": {
+        "type": null,
+        "value": null,
+        "message": null
+    },
+    "success": true,
+    "request_uuid": "6bdb61bbea15e1d6eae95ee88c5923ff",
+    "stormbreaker_uuid": "533629f2-95d3-4fa0-8030-86e4e0bb4cca"
+}

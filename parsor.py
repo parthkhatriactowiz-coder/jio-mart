@@ -77,6 +77,7 @@ class JioMartParser:
             latitude = coords[1] if len(coords) > 1 else None
 
             zone = location.get("meta_code", {}).get("zone")
+            iso = location.get("meta_code", {}).get("iso2")
 
             return {
                 "pincode": pincode,
@@ -86,13 +87,14 @@ class JioMartParser:
                 "latitude": latitude,
                 "longitude": longitude,
                 "zone": zone,
+                "iso": iso,
             }
 
         except Exception as e:
             print(f"Error getting pincode details: {e}")
             return None
 
-    def get_product_price(self, url, pincode):
+    def get_product_details(self, url, pincode):
         self._update_date()
 
         match = re.search(r"/product/([^/?]+)", url)
@@ -119,7 +121,7 @@ class JioMartParser:
 
         loc_detail = {
             "country": location.get("country", "INDIA"),
-            "country_iso_code": "IN",
+            "country_iso_code": location.get("iso", "IN"),
             "city": location.get("city", ""),
             "pincode": str(location.get("pincode", "")),
             "state": location.get("state", ""),
@@ -140,10 +142,27 @@ class JioMartParser:
             items = data.get("items", [])
             if not items:
                 print(f"No items found for slug: {slug}")
-                return None
+                return {
+                    "slug": slug,
+                    "variants": [],
+                    "total_variants": 0,
+                    "has_error": True,
+                    "error_message": "No items found",
+                    "raw_response": data,
+                }
+
+            has_error = False
+            error_message = None
+            for item in items:
+                if "error" in item:
+                    has_error = True
+                    error_message = item.get("error")
+                    print(f"Error in response: {error_message}")
 
             variants = []
             for item in items:
+                if "error" in item:
+                    continue
                 variant_data = self.utils._parse_variant(item)
                 variants.append(variant_data)
 
@@ -151,6 +170,9 @@ class JioMartParser:
                 "slug": slug,
                 "variants": variants,
                 "total_variants": len(variants),
+                "has_error": has_error,
+                "error_message": error_message,
+                "raw_response": data,
             }
 
         except Exception as e:
