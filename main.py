@@ -1,88 +1,63 @@
+import logging
+from concurrent.futures import ThreadPoolExecutor
 from parsor import JioMartParser
 from product_repository import JioMartProductSave
 from database import get_db_connection, GET_PENDING_INPUTS
-import time
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+MAX_WORKERS = 10
 
 
-def print_variant(variant, index):
+def process_row(row):
+    input_id = row["id"]
+    url = row["url"]
+    pincode = str(row["pincode"])
 
-    print(f"\n{'=' * 60}")
-    print(f"VARIANT {index}")
-    print(f"{'=' * 60}")
+    logger.info(f"Processing ID: {input_id} | Pincode: {pincode}")
 
-    for key, value in variant.items():
-        if isinstance(value, str) and len(value) > 100:
-            print(f"{key}: {value[:100]}...")
-        else:
-            print(f"{key}: {value}")
+    parser = JioMartParser()
+    price_data = parser.get_product_details(url, pincode)
+    print(f"Price Data: {price_data}")
 
-    print(f"{'=' * 60}")
-
-
-def print_product(price_data):
-    """Print all product variants"""
-    if price_data is None:
-        print("No product data available")
-        return
-
-    print("\n" + "=" * 50)
-    print("PRODUCT DETAILS")
-    print("=" * 50)
-
-    print(f"Slug: {price_data.get('slug', 'N/A')}")
-    print(f"Total Variants: {price_data.get('total_variants', 0)}")
-    print(f"Has Error: {price_data.get('has_error', False)}")
-
-    if price_data.get("error_message"):
-        print(f"Error Message: {price_data.get('error_message')}")
-
-    variants = price_data.get("variants", [])
-    if variants:
-        for idx, variant in enumerate(variants, 1):
-            print_variant(variant, idx)
-    else:
-        print("No variants found")
-
-    print("=" * 50)
+    # try:
+    #     conn = get_db_connection()
+    #     repo = JioMartProductSave(conn)
+    #     repo.save(input_id, url, pincode, price_data)
+    #     repo.close()
+    #     conn.close()
+    #     logger.info(f"Saved ID: {input_id}")
+    # except Exception as err:
+    #     logger.error(f"Error saving ID {input_id}: {err}")
 
 
 def main():
-    parser = JioMartParser()
-
     try:
         conn = get_db_connection()
-        cursor = JioMartProductSave(conn)
-        cursor.ensure_table()
+        repo = JioMartProductSave(conn)
+        repo.ensure_table()
 
-        read_cursor = conn.cursor(dictionary=True)
-        read_cursor.execute(GET_PENDING_INPUTS)
-        rows = read_cursor.fetchall()
-        read_cursor.close()
+        db_cursor = conn.cursor(dictionary=True)
+        db_cursor.execute(GET_PENDING_INPUTS)
+        rows = db_cursor.fetchall()
 
-        for row in rows[:10]:
-            pincode = row.get("pincode")
-            input_id = row.get("id")
-            url = row.get("url")
-
-            print(f"\nProcessing ID: {input_id}, Pincode: {pincode}")
-            print(f"URL: {url}")
-
-            price = parser.get_product_details(url, str(pincode))
-            print_product(price)
-
-            try:
-                cursor.save(input_id, url, pincode, price)
-            except Exception as save_error:
-                print(f"Error saving product data for ID {input_id}: {save_error}")
-                conn.rollback()
-
-            time.sleep(0.5)
-
-        cursor.close()
+        db_cursor.close()
+        repo.close()
         conn.close()
 
+        logger.info(f"Found {len(rows)} pending records to process.")
+
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            executor.map(process_row, rows[:10])
+
+        logger.info("Finished processing all records.")
+
     except Exception as e:
-        print(f"Database not found or error: {e}")
+        logger.error(f"Database error: {e}")
 
 
 if __name__ == "__main__":

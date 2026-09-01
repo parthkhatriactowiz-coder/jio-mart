@@ -7,23 +7,14 @@ DB_CONFIG = {
     "database": "jio_mart",
 }
 
-connection_pool = mysql.connector.pooling.MySQLConnectionPool(
-    pool_name="jio_mart_pool", pool_size=30, **DB_CONFIG
-)
-
 
 def get_db_connection():
-    return connection_pool.get_connection()
+    return mysql.connector.connect(**DB_CONFIG)
 
 
-GET_PENDING_INPUTS = """
-SELECT
-    id,
-    url,
-    pincode
-FROM jiomart_inputs
-WHERE status = 'pending'
-"""
+GET_PENDING_INPUTS = (
+    "SELECT id, url, pincode FROM jiomart_inputs WHERE status = 'pending'"
+)
 
 CREATE_PRODUCT_TABLE = """
 CREATE TABLE IF NOT EXISTS jiomart_products (
@@ -62,11 +53,7 @@ CREATE TABLE IF NOT EXISTS jiomart_products (
 )
 """
 
-UPDATE_INPUT_STATUS = """
-UPDATE jiomart_inputs 
-SET status = %s 
-WHERE id = %s
-"""
+UPDATE_INPUT_STATUS = "UPDATE jiomart_inputs SET status = %s WHERE id = %s"
 
 INSERT_PRODUCT = """
 INSERT INTO jiomart_products (
